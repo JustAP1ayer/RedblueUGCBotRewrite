@@ -247,7 +247,7 @@ async def info(ctx, *, item_id1: str):
                 else:
                     for idx, game_name in enumerate(game_names, start=1):
                         embed.add_field(name=f"〘{idx}〙 {game_name}", value=f"**[Game Link](https://www.roblox.com/games/{str(game_links[idx-1])}/Redblue)**  ``|-|``  **[Join Game](https://www.roblox.com/games/start?launchData=redbluewashere&placeId={str(game_links[idx-1])})**", inline=False)
-            await ctx.send(embed=embed, allowed_mentions=discord.AllowedMentions(everyone=False, roles=False, users=False))
+            await ctx.send(str(item_id),embed=embed, allowed_mentions=discord.AllowedMentions(everyone=False, roles=False, users=False))
         else:
             await ctx.send("Failed to retrieve item details.", allowed_mentions=discord.AllowedMentions(everyone=False, roles=False, users=False))
     except Exception as e:
