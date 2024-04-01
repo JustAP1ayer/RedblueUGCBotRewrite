@@ -136,10 +136,14 @@ session.cookies['.ROBLOSECURITY'] = config["cookie"]
 async def info(ctx, *, item_id1: str):
     print(f"{ctx.message.author} used the command: Info with {item_id1}")
     try:
+        not_item = False
         if "catalog/" in item_id1:
             item_id = item_id1.split("/catalog/")[1].split("/")[0]
         elif "item/" in item_id1:
             item_id = item_id1.split("/item/")[1].split("/")[0]
+        elif "games/" in item_id1:
+            item_id = item_id1.split("/games/")[1].split("/")[0]
+            not_item = True
         else:
             item_id = item_id1
 
@@ -171,6 +175,7 @@ async def info(ctx, *, item_id1: str):
             remaining = details_data.get("Remaining")
             game_links = []
             game_names = []
+            universe_ids = ""
             if details_data.get("SaleLocation", {}) and details_data.get("SaleLocation", {}).get("UniverseIds", []):
                 sale_location = details_data.get("SaleLocation", {})
                 universe_ids = sale_location.get("UniverseIds", [])
@@ -220,7 +225,7 @@ async def info(ctx, *, item_id1: str):
             embed.set_footer(text='nyaa~w redblue was here ^~^', icon_url="https://i.imgur.com/hWCLhIZ.png")
             embed.add_field(
                 name="__Price Information__",
-                value=f"> **Original Price**: {price_in_robux}" + (f"\n**Lowest Resale Price**: {details_data.get('CollectiblesItemDetails', {}).get('CollectibleLowestResalePrice', 0)}" if details_data.get('CollectiblesItemDetails', {}) is not None and details_data.get('CollectiblesItemDetails', {}).get('CollectibleLowestResalePrice', 0) is not None and details_data.get('CollectiblesItemDetails', {}).get('CollectibleLowestResalePrice', 0) != 0 else ''),
+                value=f"> **Original Price**: {price_in_robux}" + (f"\n> **Lowest Resale Price**: {details_data.get('CollectiblesItemDetails', {}).get('CollectibleLowestResalePrice', 0)}" if details_data.get('CollectiblesItemDetails', {}) is not None and details_data.get('CollectiblesItemDetails', {}).get('CollectibleLowestResalePrice', 0) is not None and details_data.get('CollectiblesItemDetails', {}).get('CollectibleLowestResalePrice', 0) != 0 else ''),
                 inline=False
             )
             embed.add_field(
@@ -228,6 +233,8 @@ async def info(ctx, *, item_id1: str):
                 value=f"> **Created**: {creationdiscord_timestampTR} | {creationdiscord_timestampT}\n> **Last Updated**: {updatediscord_timestampTR} | {updatediscord_timestampT}",
                 inline=False
             )
+            if str(assettypes[details_data.get('AssetTypeId')]) == "Place":
+                not_item = True
             if remaining is not None and total_quantity is not None:
                 given_percent, remaining_percent = calculate_percentages(remaining, total_quantity)
             else:
@@ -242,11 +249,12 @@ async def info(ctx, *, item_id1: str):
                     inline=False
                 )
             if details_data.get("SaleLocation", {}) and details_data.get("SaleLocation", {}).get("UniverseIds", []):
-                if details_data.get("SaleLocation", {}).get("SaleLocationType") != 6:
-                    embed.add_field(name="Website Item!!", value="**[Wagoogus](https://www.roblox.com/games/975820487)**  ``|-|``  **[Join](https://www.roblox.com/games/start?launchData=redbluewashere&placeId=975820487)**\n**[Rolimons](https://www.roblox.com/games/14056754882)**  ``|-|``  **[Join](https://www.roblox.com/games/start?launchData=redbluewashere&placeId=14056754882)**", inline=False)
-                else:
+                if details_data.get("SaleLocation", {}).get("SaleLocationType") == 6 :
                     for idx, game_name in enumerate(game_names, start=1):
                         embed.add_field(name=f"〘{idx}〙 {game_name}", value=f"**[Game Link](https://www.roblox.com/games/{str(game_links[idx-1])}/Redblue)**  ``|-|``  **[Join Game](https://www.roblox.com/games/start?launchData=redbluewashere&placeId={str(game_links[idx-1])})**", inline=False)
+            else:
+                if not_item == False:
+                    embed.add_field(name="Website Item!!", value=f"**[Wagoogus Link](https://www.roblox.com/games/975820487)**  ``|-|``  **[Join Wagoogus](https://www.roblox.com/games/start?launchData=redbluewashere&placeId=975820487)**\n**[Rolimons Link](https://www.roblox.com/games/14056754882)**  ``|-|``  **[Join Rolimons](https://www.roblox.com/games/start?launchData=redbluewashere&placeId=14056754882)**", inline=False)
             await ctx.send(str(item_id),embed=embed, allowed_mentions=discord.AllowedMentions(everyone=False, roles=False, users=False))
         else:
             await ctx.send("Failed to retrieve item details.", allowed_mentions=discord.AllowedMentions(everyone=False, roles=False, users=False))
