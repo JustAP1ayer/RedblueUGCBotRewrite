@@ -27,10 +27,10 @@ async def on_ready():
     print(f'Total guilds: {len(bot.guilds)}')
 
 def calculate_percentages(value, total):
-    given_percentage = (value / total) * 100
-    remaining_percentage = 100 - given_percentage
-    
-    return given_percentage, remaining_percentage
+    if total != 0:
+        given_percentage = (value / total) * 100
+        remaining_percentage = 100 - given_percentage
+        return given_percentage, remaining_percentage
 def uwu_converter(message):
     uwu_message = (
         re.sub(r'(r|l)', 'w', message, flags=re.IGNORECASE)
@@ -235,12 +235,12 @@ async def info(ctx, *, item_id1: str):
             )
             if str(assettypes[details_data.get('AssetTypeId')]) == "Place":
                 not_item = True
-            if remaining is not None and total_quantity is not None:
+            if remaining is not None and total_quantity is not None and total_quantity != 0:
                 given_percent, remaining_percent = calculate_percentages(remaining, total_quantity)
             else:
                 given_percent = None
                 remaining_percent = None
-            if remaining is not None and total_quantity is not None:
+            if remaining is not None and total_quantity is not None and total_quantity != 0:
                 embed.add_field(
                     name="__Stock Info__",
                     value=(f"> Remaining: {remaining}/{total_quantity}\n" if remaining is not None and total_quantity is not None else '') +
