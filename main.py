@@ -9,6 +9,7 @@ import random
 import re
 import json
 import traceback
+import os
 
 with open("settings.json", "r") as config_file:
     config = json.load(config_file)
@@ -425,7 +426,7 @@ async def item2places(ctx, item_id1: str):
             item_id = item_id1.split("/item/")[1].split("/")[0]
         else:
             item_id = item_id1
-        response = session.get(f'https://economy.roblox.com/v2/assets/{item_id}/details')
+        response = session.get(f'https://economy.roblox.com/v2/assets/{str(item_id)}/details')
 
         if response.status_code == 200:
             data = response.json()
@@ -436,7 +437,7 @@ async def item2places(ctx, item_id1: str):
                 place_names = []  
 
                 for universe_id in universe_ids:
-                    game_response = session.get(f'https://develop.roblox.com/v1/universes/{universe_id}/places?isUniverseCreation=false&limit=100&sortOrder=Asc')
+                    game_response = session.get(f'https://develop.roblox.com/v1/universes/{str(universe_id)}/places?isUniverseCreation=false&limit=100&sortOrder=Asc')
 
                     if game_response.status_code == 200:
                         game_data = game_response.json()
@@ -446,10 +447,13 @@ async def item2places(ctx, item_id1: str):
                     else:
                         await ctx.send(f"Error: Unable to fetch data {universe_id}. Status code: {game_response.status_code}")
         
-                modified_ids = ['\n > **``{}``**\n> [{}](<https://www.roblox.com/games/{}/Redblue>)'.format(gamena, id, id) for gamena, id in zip(place_names, place_ids)] 
+                modified_ids = ['\n > {}\nhttps://www.roblox.com/games/{}/Redblue'.format(gamena, id) for gamena, id in zip(place_names, place_ids)] 
         
-                message = f"**```Place(s):```** {', '.join(modified_ids)}"
-                await ctx.send(message)
+                message = f"Place(s): {', '.join(modified_ids)}"
+                with open("places2.txt", "w", encoding='utf-8', errors='ignore') as f:
+                    f.write(message)
+                await ctx.send(file=discord.File("places2.txt"))
+                os.remove("places2.txt")
             else:
                 await ctx.send("No universe IDs found for this item.")
         else:
@@ -457,7 +461,7 @@ async def item2places(ctx, item_id1: str):
         if item_id1 is None: 
             await ctx.send("Please add an item link or item ID")
     except Exception as e:
-        print(e)
+        traceback.print_exc()
         await ctx.send("An error occurred while fetching the sale universes.")
 
 
@@ -468,7 +472,31 @@ async def item2places_error(ctx, error):
         em.timestamp = datetime.datetime.utcnow()
         em.set_footer(text='nyaa~w redblue was here ^~^',icon_url="https://i.imgur.com/hWCLhIZ.png")
         await ctx.send(embed=em)
+@bot.command()
+@commands.cooldown(1, 14, commands.BucketType.user)
 
+async def game2universe(ctx, game_id1: str):
+    print(f"{ctx.message.author} used the command: game2universe with {game_id1}")
+    try:
+        if "games/" in game_id1:
+            game_id = game_id1.split("/games/")[1].split("/")[0]
+        else:
+            game_id = game_id1
+        response = session.get(f'https://apis.roblox.com/universes/v1/places/{str(game_id)}/universe')
+        if response.status_code == 200:
+            data = response.json()
+            universe_ids = data.get('universeId')
+            await ctx.send(f"```{universe_ids}```")
+    except Exception as e:
+        print(e)
+        await ctx.send("An error occurred while fetching the sale universes.")
+@game2universe.error
+async def game2universe_error(ctx, error):
+    if isinstance(error, commands.CommandOnCooldown):
+        em = discord.Embed(title=f"Slow down!", description=f"Try again in {error.retry_after:.2f}s.", color=15548997)
+        em.timestamp = datetime.datetime.utcnow()
+        em.set_footer(text='nyaa~w redblue was here ^~^',icon_url="https://i.imgur.com/hWCLhIZ.png")
+        await ctx.send(embed=em)
 @bot.command()
 @commands.cooldown(1, 14, commands.BucketType.user)
 async def game2places(ctx, game_id1: str):
@@ -501,10 +529,13 @@ async def game2places(ctx, game_id1: str):
                     else:
                         await ctx.send(f"Error: Unable to fetch data {universe_id}. Status code: {game_response.status_code}")
 
-                modified_ids = ['\n > **``{}``**\n> [{}](<https://www.roblox.com/games/{}/Redblue>)'.format(gamena1, id1, id1) for gamena1, id1 in zip(place_names1, place_ids1)]
+                modified_ids = ['\n > {}\nhttps://www.roblox.com/games/{}/Redblue'.format(gamena1, id1) for gamena1, id1 in zip(place_names1, place_ids1)]
 
-                message = f"**```Place(s):```** {', '.join(modified_ids)}"
-                await ctx.send(message)
+                message = f"Place(s): {', '.join(modified_ids)}"
+                with open("places.txt", "w", encoding='utf-8', errors='ignore') as f:
+                    f.write(message)
+                await ctx.send(file=discord.File("places.txt"))
+                os.remove("places.txt")
             else:
                 await ctx.send("No universe IDs found for this item.")
         else:
@@ -733,24 +764,48 @@ async def uploader(ctx, item_id1: str):
                 details_url = f"https://economy.roblox.com/v2/assets/{str(asset_id)}/details"
                 details_response = session.get(details_url)
                 details_data = details_response.json()
-                creatorname = details_data.get("Creator", {}).get("Name")
-                creatorid = details_data.get("Creator", {}).get("Id")
-                em = discord.Embed(title=f"Asset Uploader Found!")
-                em.add_field(name=f"Item Id: {item_id}", value=f"https://www.roblox.com/catalog/{item_id}/Redblue", inline=False)
-                player_url = f"https://users.roblox.com/v1/users/{str(creatorid)}"
-                player_response = session.get(player_url)
-                thumbnail_url = f"https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds={str(creatorid)}&size=352x352&format=Png&isCircular=false"
-                thumbnail_response = session.get(thumbnail_url)
-                em.add_field(name=f"Creator ID: {creatorid}", value=f"https://www.roblox.com/users/{str(creatorid)}/profile", inline=False)
-                em.timestamp = datetime.datetime.utcnow()
-                em.set_footer(text='nyaa~w redblue was here ^~^', icon_url="https://i.imgur.com/hWCLhIZ.png")
-                if thumbnail_response.status_code == 200:
-                    thumbnail_data = thumbnail_response.json()
-                    em.set_thumbnail(url=str(thumbnail_data["data"][0]["imageUrl"]))
-                if player_response.status_code == 200:
-                    player_response_data = player_response.json()
-                    em.add_field(name=f"Creator Name: {creatorname}", value=f"Creator Display Name: **{player_response_data.get('displayName')}**", inline=False)
-                await ctx.send(embed=em, allowed_mentions=discord.AllowedMentions(everyone=False,roles=False,users=False))
+                if details_data.get("Creator", {}).get("CreatorType") == "User":
+                    creatorname = details_data.get("Creator", {}).get("Name")
+                    creatorid = details_data.get("Creator", {}).get("Id")
+                    em = discord.Embed(title=f"Asset Uploader Found!")
+                    em.add_field(name=f"Item Id: {item_id}", value=f"https://www.roblox.com/catalog/{item_id}/Redblue", inline=False)
+                    player_url = f"https://users.roblox.com/v1/users/{str(creatorid)}"
+                    player_response = session.get(player_url)
+                    thumbnail_url = f"https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds={str(creatorid)}&size=352x352&format=Png&isCircular=false"
+                    thumbnail_response = session.get(thumbnail_url)
+                    em.add_field(name=f"Creator ID: {creatorid}", value=f"https://www.roblox.com/users/{str(creatorid)}/profile", inline=False)
+                    em.timestamp = datetime.datetime.utcnow()
+                    em.set_footer(text='nyaa~w redblue was here ^~^', icon_url="https://i.imgur.com/hWCLhIZ.png")
+                    if thumbnail_response.status_code == 200:
+                        thumbnail_data = thumbnail_response.json()
+                        em.set_thumbnail(url=str(thumbnail_data["data"][0]["imageUrl"]))
+                    if player_response.status_code == 200:
+                        player_response_data = player_response.json()
+                        em.add_field(name=f"Creator Name: {creatorname}", value=f"Creator Display Name: **{player_response_data.get('displayName')}**", inline=False)
+                    await ctx.send(embed=em, allowed_mentions=discord.AllowedMentions(everyone=False,roles=False,users=False))
+                else:
+                    creatorname = details_data.get("Creator", {}).get("Name")
+                    creatorid = details_data.get("Creator", {}).get("CreatorTargetId")
+                    em = discord.Embed(title=f"Asset Uploader Found!")
+                    em.add_field(name=f"Item Id: {item_id}", value=f"https://www.roblox.com/catalog/{item_id}/Redblue", inline=False)
+                    player_url = f"https://groups.roblox.com/v2/groups?groupIds={str(creatorid)}"
+                    print(player_url)
+                    player_response = session.get(player_url)
+                    thumbnail_url = f"https://thumbnails.roblox.com/v1/groups/icons?groupIds={str(creatorid)}&size=420x420&format=Png&isCircular=false"
+                    thumbnail_response = session.get(thumbnail_url)
+                    em.add_field(name=f"Group ID: {creatorid}", value=f"https://www.roblox.com/groups/{str(creatorid)}/profile", inline=False)
+                    em.timestamp = datetime.datetime.utcnow()
+                    em.set_footer(text='nyaa~w redblue was here ^~^', icon_url="https://i.imgur.com/hWCLhIZ.png")
+                    if thumbnail_response.status_code == 200:
+                        thumbnail_data = thumbnail_response.json()
+                        em.set_thumbnail(url=str(thumbnail_data["data"][0]["imageUrl"]))
+                    if player_response.status_code == 200:
+                        player_response_data = player_response.json()
+                        print(player_response_data)
+                        userid = player_response_data['data'][0]['owner']['id']
+                        if userid and userid is not None:
+                            em.add_field(name=f"Group Name: {creatorname}", value=f"Group Owner ID: **{userid}** \n Link: **https://www.roblox.com/users/{str(userid)}/profile**", inline=False)
+                    await ctx.send(embed=em, allowed_mentions=discord.AllowedMentions(everyone=False,roles=False,users=False))
             else:
                 await ctx.send("Error Finding the Uploader!", allowed_mentions=discord.AllowedMentions(everyone=False,roles=False,users=False))
         else:
@@ -758,7 +813,7 @@ async def uploader(ctx, item_id1: str):
         if item_id1 is None: 
             await ctx.send("Please add an item link or an item id", allowed_mentions=discord.AllowedMentions(everyone=False,roles=False,users=False))
     except Exception as e:
-        print(e)
+        traceback.print_exc()
         await ctx.send("An error occurred (are you sure it was an accessory?)", allowed_mentions=discord.AllowedMentions(everyone=False,roles=False,users=False))
 
 
