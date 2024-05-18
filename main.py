@@ -254,7 +254,7 @@ async def info(ctx, *, item_id1: str):
                     for idx, game_name in enumerate(game_names, start=1):
                         embed.add_field(name=f"〘{idx}〙 {game_name}", value=f"**[Game Link](https://www.roblox.com/games/{str(game_links[idx-1])}/Redblue)**  ``|-|``  **[Join Game](https://www.roblox.com/games/start?launchData=redbluewashere&placeId={str(game_links[idx-1])})**", inline=False)
             else:
-                if not_item == False:
+                if not_item == False and details_data.get("IsForSale") == True:
                     embed.add_field(name="Website Item!!", value=f"**[Wagoogus Link](https://www.roblox.com/games/975820487)**  ``|-|``  **[Join Wagoogus](https://www.roblox.com/games/start?launchData=redbluewashere&placeId=975820487)**\n**[Rolimons Link](https://www.roblox.com/games/14056754882)**  ``|-|``  **[Join Rolimons](https://www.roblox.com/games/start?launchData=redbluewashere&placeId=14056754882)**", inline=False)
             await ctx.send(str(item_id),embed=embed, allowed_mentions=discord.AllowedMentions(everyone=False, roles=False, users=False))
         else:
@@ -554,7 +554,7 @@ async def game2places_error(ctx, error):
         em.set_footer(text='nyaa~w redblue was here ^~^',icon_url="https://i.imgur.com/hWCLhIZ.png")
         await ctx.send(embed=em)
 
-@bot.command()
+'''@bot.command()
 @commands.cooldown(1, 14, commands.BucketType.user)
 async def waifu(ctx):
     print(f"{ctx.message.author} used the command: Waifu")
@@ -636,7 +636,7 @@ async def neko_error(ctx, error):
         em = discord.Embed(title=f"Slow down! (u weird asf tho)", description=f"Try again in {error.retry_after:.2f}s.", color=15548997)
         em.timestamp = datetime.datetime.utcnow()
         em.set_footer(text='redblue is disgusted, redblue better',icon_url="https://i.imgur.com/hWCLhIZ.png")
-        await ctx.send(embed=em)
+        await ctx.send(embed=em)'''
 @bot.command()
 @commands.cooldown(1, 14, commands.BucketType.user)
 async def ping(ctx):
@@ -652,7 +652,7 @@ async def ping_error(ctx, error):
         em.set_footer(text='nyaa~w redblue was here ^~^', icon_url="https://i.imgur.com/hWCLhIZ.png")
         await ctx.send(embed=em)
 
-@bot.command()
+'''@bot.command()
 @commands.cooldown(1, 14, commands.BucketType.user)
 async def support(ctx):
     print(f"{ctx.message.author} used the command: Support")
@@ -664,7 +664,7 @@ async def support_error(ctx, error):
         em = discord.Embed(title=f"Slow down!", description=f"Try again in {error.retry_after:.2f}s.", color=15548997)
         em.timestamp = datetime.datetime.utcnow()
         em.set_footer(text='nyaa~w redblue was here ^~^', icon_url="https://i.imgur.com/hWCLhIZ.png")
-        await ctx.send(embed=em)
+        await ctx.send(embed=em)'''
 
 @bot.command()
 @commands.cooldown(1, 14, commands.BucketType.user)
@@ -824,7 +824,7 @@ async def uploader_error(ctx, error):
         em.timestamp = datetime.datetime.utcnow()
         em.set_footer(text='nyaa~w redblue was here ^~^', icon_url="https://i.imgur.com/hWCLhIZ.png")
         await ctx.send(embed=em, allowed_mentions=discord.AllowedMentions(everyone=False,roles=False,users=False))
-@bot.event
+'''@bot.event
 async def on_message(message):
     await bot.process_commands(message)
     try:
@@ -844,6 +844,6 @@ async def on_message(message):
             if random_number < 0.25:
                 await message.channel.send("https://cdn.discordapp.com/attachments/1028098087480205344/1178823457744621608/dGA7oggFcD6SzfKp.mp4?ex=65778be5&is=656516e5&hm=a9775d6add67709ac6085a61a3362e02db576c73eaad2397ea96793ce2b9e858&") 
     except Exception as e:
-        print(e)
+        print(e)'''
 bot.run(config["token"])
 
